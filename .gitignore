@@ -1,0 +1,5 @@
+kubernetes/kafka/producer/logs/
+kubernetes/spark/files/
+kubernetes/kafka/producer/.env
+kafka/producer/iq_option.ipynb
+telepresence.log

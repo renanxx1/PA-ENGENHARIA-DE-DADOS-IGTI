@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: files-volume-pv
+  labels:
+    type: local
+spec:
+  storageClassName: files-volume
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/files"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: files-volume-pvc
+spec:
+  storageClassName: files-volume
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
