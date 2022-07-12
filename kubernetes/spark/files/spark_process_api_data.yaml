@@ -1,0 +1,39 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: "spark-processing"
+  namespace: spark
+spec:
+  timeToLiveSeconds: 60
+  volumes:
+    - name: files
+      persistentVolumeClaim:
+       claimName: files-volume-pvc
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: "renanxx1/spark-pa"
+  imagePullPolicy: Always
+  mainApplicationFile: local:///files/spark_process_api_data.py 
+  sparkVersion: "3.1.1"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    coreLimit: "1200m"
+    memory: "2g"
+    labels:
+      version: 3.1.1
+    serviceAccount: spark-operator-spark
+    volumeMounts:
+      - name: files
+        mountPath: /files
+  executor:
+    cores: 2
+    instances: 2
+    memory: "2g"
+    labels:
+      version: 3.1.1
+    volumeMounts:
+      - name: files
+        mountPath: /files
