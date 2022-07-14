@@ -10,6 +10,8 @@ nodes:
   extraMounts:
     - hostPath: ./kubernetes/spark/files
       containerPath: /files    
+    - hostPath: ./kubernetes/druid/data
+      containerPath: /druid  
   kubeadmConfigPatches:
   - |
     kind: JoinConfiguration

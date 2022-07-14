@@ -78,6 +78,21 @@ sudo helm upgrade --install spark-operator spark-operator/spark-operator --set w
 #Aguarda serviços iniciarem
 sudo kubectl wait kafka/kafka-pa --for=condition=Ready --timeout=600s -n kafka 
 
+
+#Cria namespace do druid
+kubectl create namespace druid
+
+#Cria pvc utilizada pelo storage do druid
+kubectl apply -f kubernetes/kind/pvc-druid.yaml -n druid
+
+#Efetua deploy do operador
+helm upgrade --install cluster-druid-operator kubernetes/druid/chart/ -n druid
+
+#Efetua deploy do cluster
+kubectl apply -f kubernetes/druid/examples/tiny-cluster-zk.yaml -n druid
+kubectl apply -f kubernetes/druid/examples/tiny-cluster.yaml -n druid
+
+
 #Pega o IP do cluster
 echo ""
 echo "############################################################################################"
@@ -90,10 +105,16 @@ kubectl get svc kafka-ui -n kafka -o jsonpath='KAFKA UI DISPONIVEL NO ENDEREÇO:
 echo "############################################################################################"
 echo ""
 
+echo "############################################################################################"
+kubectl get svc druid-tiny-cluster-routers -n druid -o jsonpath='DRUID ENDEREÇO: http://{.spec.clusterIP}:{.spec.ports[0].port}'    
+echo "############################################################################################"
+echo ""
+
+
 #Remove arquivos temporatios
 sudo rm -rf get-docker.sh telepresence.log
 
 #Executa o telepresence para ter acesso ao cluster
-telepresence --context kind-kind --namespace kafka
+telepresence --context kind-kind
 
-
+#kubectl port-forward druid-tiny-cluster-routers-0 8080:8088 -n druid
