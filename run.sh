@@ -58,6 +58,8 @@ sudo helm repo add kafka-ui https://provectus.github.io/kafka-ui
 #Deploy do kafka-ui
 sudo helm upgrade --install kafka-ui kafka-ui/kafka-ui --set envs.config.KAFKA_CLUSTERS_0_NAME=local --set envs.config.KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-pa-kafka-bootstrap:9092 --namespace kafka
 
+#Libera permissão na pasta kubernetes/spark
+sudo chmod -R 777 kubernetes/kafka/producer/
 
 #Cria namespace
 sudo kubectl create namespace spark
@@ -92,6 +94,9 @@ helm upgrade --install cluster-druid-operator kubernetes/druid/chart/ -n druid
 kubectl apply -f kubernetes/druid/examples/tiny-cluster-zk.yaml -n druid
 kubectl apply -f kubernetes/druid/examples/tiny-cluster.yaml -n druid
 
+/bin/sleep 20
+sudo kubectl wait pod druid-tiny-cluster-historicals-0 --for=condition=Ready --timeout=600s -n druid 
+
 
 #Pega o IP do cluster
 echo ""
@@ -106,9 +111,10 @@ echo "##########################################################################
 echo ""
 
 echo "############################################################################################"
-kubectl get svc druid-tiny-cluster-routers -n druid -o jsonpath='DRUID ENDEREÇO: http://{.spec.clusterIP}:{.spec.ports[0].port}'    
+kubectl get svc druid-tiny-cluster-routers -n druid -o jsonpath='DRUID ENDEREÇO: {"\n"}http://{.spec.clusterIP}:{.spec.ports[0].port}{"\n"}'
 echo "############################################################################################"
 echo ""
+
 
 
 #Remove arquivos temporatios
@@ -118,3 +124,9 @@ sudo rm -rf get-docker.sh telepresence.log
 telepresence --context kind-kind
 
 #kubectl port-forward druid-tiny-cluster-routers-0 8080:8088 -n druid
+
+#sudo kubefwd svc -n druid -n kafka
+
+# sudo kubectl port-forward svc/kafka-ui 8080:80 -n kafka & \
+# sudo kubectl port-forward svc/kafka-pa-kafka-bootstrap 9092:9092 -n kafka & \
+# sudo kubectl port-forward svc/druid-tiny-cluster-routers 8081:8088 -n druid &
